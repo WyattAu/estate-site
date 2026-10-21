@@ -1,0 +1,56 @@
+# Build the estate index and deploy it to GitHub Pages. The generator is
+# the estate's own docs engine consumed as a published crates.io crate —
+# the repo exists to dogfood that path in production.
+name: site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: "0 5 * * 1" # Mondays: refresh the registry data after the Dependabot wave
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Fetch the estate inventory
+        run: |
+          curl --fail --silent "https://raw.githubusercontent.com/WyattAu/engineering-standards/main/scripts/estate-crates.txt" -o crates.txt
+      - name: Fetch live registry versions
+        run: |
+          : > versions.tsv
+          while IFS= read -r crate; do
+            [ -z "$crate" ] && continue
+            case "$crate" in \#*) continue;; esac
+            VER=$(curl --fail --silent -A "wyatt-estate-site" \
+              "https://crates.io/api/v1/crates/$crate" \
+              | jq -r '.crate.max_stable_version // empty' || true)
+            [ -n "$VER" ] && printf '%s\t%s\n' "$crate" "$VER" >> versions.tsv
+            sleep 1
+          done < crates.txt
+      - run: cargo run --release -- crates.txt versions.tsv dist
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

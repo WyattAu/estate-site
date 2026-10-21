@@ -1,0 +1,19 @@
+[package]
+name = "estate-site"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+authors = ["Wyatt Au <wyatt_au@protonmail.com>"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/WyattAu/estate-site"
+description = "The WyattAu estate index page — rendered by docs-core, the estate's own docs engine"
+keywords = ["documentation", "ssg", "static-site"]
+categories = ["development-tools"]
+publish = false
+
+[dependencies]
+docs-core = "0.1"
+
+[lints.rust]
+missing_docs = "deny"
+missing_debug_implementations = "deny"
