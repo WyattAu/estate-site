@@ -51,14 +51,14 @@ fn main() {
 
     let mut md = String::new();
     md.push_str("# The WyattAu Rust Estate\n\n");
-    md.push_str(&format!(
+    md.push_str(
         "A layered crate ecosystem: no-std substrates at the bottom,\n\
          domain libraries in the middle, applications on top — every layer\n\
          published to [crates.io](https://crates.io), gated by shared CI\n\
          (fmt, clippy, tests, coverage, miri where it applies, cargo-deny,\n\
          cargo-vet, semver), and composed by an integration suite that runs\n\
-         against the published artifacts.\n\n"
-    ));
+         against the published artifacts.\n\n",
+    );
     md.push_str(&format!(
         "**{published}** of **{total}** registered crates are live on crates.io.\n\n",
         total = names.len()
